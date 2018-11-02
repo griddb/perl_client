@@ -548,6 +548,14 @@
     }
 }
 
+/**-------------------------------------GSException Class------------------------------------------------**/
+/**
+* Typemaps for throw GSException
+*/
+%typemap(throws) griddb::GSException %{
+    sv_setsv(get_sv("@", GV_ADD), SWIG_NewPointerObj(SWIG_as_voidptr(&$1), $descriptor(griddb::GSException*), SWIG_POINTER_OWN)); SWIG_fail ;
+%}
+
 /**-------------------------------------StoreFactory Class------------------------------------------------**/
 /**
 * Typemaps for StoreFactory::set_properties(const GSPropertyEntry* props, int propsCount)
