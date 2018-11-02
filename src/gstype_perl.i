@@ -92,9 +92,13 @@
 		int microSecond;
 		sscanf(strBuf, "%d-%d-%dT%d:%d:%d.%dZ", &year, &month, &day, &hour, &minute, &second, &miliSecond);
 		microSecond = miliSecond * 1000;
-		if (year >= 1900) {
+		if (year >= 1900) {		//Year in perl has format 1900 + xx
 			year = year - 1900;
 		}
+        //Month in Perl start from 0 to 11 (in output of gsFormatTime(), month start from 1 to 12)
+        if (month) {
+            month--;
+        }
 
 		// Convert to array
 		AV *dateTimeArr = newAV();
