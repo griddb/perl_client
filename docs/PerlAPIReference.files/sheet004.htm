@@ -1,0 +1,169 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 15">
+<link id=Main-File rel=Main-File href="../PerlAPIReference.htm">
+<link rel=File-List href=filelist.xml>
+<link rel=Stylesheet href=stylesheet.css>
+<style>
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+@page
+	{margin:.75in .7in .75in .7in;
+	mso-header-margin:.3in;
+	mso-footer-margin:.3in;}
+ruby
+	{ruby-align:left;}
+rt
+	{color:windowtext;
+	font-size:6.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"ＭＳ Ｐゴシック", monospace;
+	mso-font-charset:128;
+	mso-char-type:katakana;
+	display:none;}
+-->
+</style>
+<![if !supportTabStrip]><script language="JavaScript">
+<!--
+function fnUpdateTabs()
+ {
+  if (parent.window.g_iIEVer>=4) {
+   if (parent.document.readyState=="complete"
+    && parent.frames['frTabs'].document.readyState=="complete")
+   parent.fnSetActiveSheet(3);
+  else
+   window.setTimeout("fnUpdateTabs();",150);
+ }
+}
+
+if (window.name!="frSheet")
+ window.location.replace("../PerlAPIReference.htm");
+else
+ fnUpdateTabs();
+//-->
+</script>
+<![endif]>
+</head>
+
+<body link="#0563C1" vlink="#954F72">
+
+<table border=0 cellpadding=0 cellspacing=0 width=1093 style='border-collapse:
+ collapse;table-layout:fixed;width:820pt'>
+ <col width=72 style='width:54pt'>
+ <col width=169 style='mso-width-source:userset;mso-width-alt:5408;width:127pt'>
+ <col class=xl74 width=132 style='mso-width-source:userset;mso-width-alt:4224;
+ width:99pt'>
+ <col width=72 span=10 style='width:54pt'>
+ <tr height=18 style='mso-height-source:userset;height:13.5pt'>
+  <td colspan=2 rowspan=2 height=54 class=xl93 width=241 style='border-right:
+  .5pt solid black;border-bottom:.5pt solid black;height:40.5pt;width:181pt'></td>
+  <td rowspan=2 class=xl97 width=132 style='border-bottom:.5pt solid black;
+  width:99pt'>example</td>
+  <td colspan=10 class=xl99 width=720 style='border-right:.5pt solid black;
+  border-left:none;width:540pt'>Converted data-type</td>
+ </tr>
+ <tr height=36 style='height:27.0pt'>
+  <td height=36 class=xl75 width=72 style='height:27.0pt;border-top:none;
+  border-left:none;width:54pt'>BOOL</td>
+  <td class=xl75 width=72 style='border-top:none;border-left:none;width:54pt'>BYTE</td>
+  <td class=xl75 width=72 style='border-top:none;border-left:none;width:54pt'>SHORT</td>
+  <td class=xl75 width=72 style='border-top:none;border-left:none;width:54pt'>INTEGER</td>
+  <td class=xl75 width=72 style='border-top:none;border-left:none;width:54pt'>LONG</td>
+  <td class=xl75 width=72 style='border-top:none;border-left:none;width:54pt'>FLOAT</td>
+  <td class=xl75 width=72 style='border-top:none;border-left:none;width:54pt'>DOUBLE</td>
+  <td class=xl75 width=72 style='border-top:none;border-left:none;width:54pt'>STRING</td>
+  <td class=xl75 width=72 style='border-top:none;border-left:none;width:54pt'>TIMESTAMP</td>
+  <td class=xl75 width=72 style='border-top:none;border-left:none;width:54pt'>BLOB</td>
+ </tr>
+ <tr height=23 style='mso-height-source:userset;height:17.25pt'>
+  <td rowspan=4 height=92 class=xl102 width=72 style='height:69.0pt;border-top:
+  none;width:54pt'>Input data</td>
+  <td class=xl67 style='border-top:none;border-left:none'>integer value (IV)</td>
+  <td class=xl73 style='border-top:none;border-left:none'>0</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+ </tr>
+ <tr height=23 style='mso-height-source:userset;height:17.25pt'>
+  <td height=23 class=xl67 style='height:17.25pt;border-top:none;border-left:
+  none'>double (NV)</td>
+  <td class=xl73 style='border-top:none;border-left:none'>0.1</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+ </tr>
+ <tr height=23 style='mso-height-source:userset;height:17.25pt'>
+  <td height=23 class=xl67 style='height:17.25pt;border-top:none;border-left:
+  none'>string (PV)</td>
+  <td class=xl73 style='border-top:none;border-left:none'>&quot;yamada&quot;</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+ </tr>
+ <tr height=23 style='mso-height-source:userset;height:17.25pt'>
+  <td height=23 class=xl75 width=169 style='height:17.25pt;border-top:none;
+  border-left:none;width:127pt'>list (AV)</td>
+  <td class=xl80 width=132 style='border-top:none;border-left:none;width:99pt'>gmtime()</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+  <td class=xl67 style='border-top:none;border-left:none'>✓</td>
+  <td class=xl67 style='border-top:none;border-left:none'>　</td>
+ </tr>
+ <![if supportMisalignedColumns]>
+ <tr height=0 style='display:none'>
+  <td width=72 style='width:54pt'></td>
+  <td width=169 style='width:127pt'></td>
+  <td width=132 style='width:99pt'></td>
+  <td width=72 style='width:54pt'></td>
+  <td width=72 style='width:54pt'></td>
+  <td width=72 style='width:54pt'></td>
+  <td width=72 style='width:54pt'></td>
+  <td width=72 style='width:54pt'></td>
+  <td width=72 style='width:54pt'></td>
+  <td width=72 style='width:54pt'></td>
+  <td width=72 style='width:54pt'></td>
+  <td width=72 style='width:54pt'></td>
+  <td width=72 style='width:54pt'></td>
+ </tr>
+ <![endif]>
+</table>
+
+</body>
+
+</html>
