@@ -20,12 +20,33 @@
 
 //Wrap pair of get/set methods attribute
 %include <attribute.i>
+//Read only attribute Container::type
+%attribute(griddb::Container, int, type, get_type);
+//Read only attribute GSException::is_timeout
+%attribute(griddb::GSException, bool, is_timeout, is_timeout);
+//Read only attribute Store::partition_info
+%newobject griddb::Store::partition_info;
+%attribute(griddb::Store, griddb::PartitionController*, partition_info, partition_info);
+//Read only attribute PartitionController::partition_count
+%attribute(griddb::PartitionController, int, partition_count, get_partition_count);
+//Read only attribute RowKeyPredicate::partition_count
+%attribute(griddb::RowKeyPredicate, GSType, key_type, get_key_type);
+//Read only attribute RowSet::size
+%attribute(griddb::RowSet, int32_t, size, size);
+//Read only attribute RowSet::type
+%attribute(griddb::RowSet, GSRowSetType, type, type);
 //Read and write attribute ContainerInfo::name
 %attribute(griddb::ContainerInfo, GSChar*, name, get_name, set_name);
 //Read and write attribute ContainerInfo::type
 %attribute(griddb::ContainerInfo, int, type, get_type, set_type);
 //Read and write attribute ContainerInfo::rowKeyAssign
 %attribute(griddb::ContainerInfo, bool, row_key, get_row_key_assigned, set_row_key_assigned);
+//Read only attribute ExpirationInfo::time
+%attribute(griddb::ExpirationInfo, int, time, get_time, set_time);
+//Read and write attribute ExpirationInfo::unit
+%attribute(griddb::ExpirationInfo, GSTimeUnit, unit, get_time_unit, set_time_unit);
+//Read and write attribute ExpirationInfo::divisionCount
+%attribute(griddb::ExpirationInfo, int, division_count, get_division_count, set_division_count);
 
 //Define Timestamp constant
 #define PERL_DATETIME_SEC		0
