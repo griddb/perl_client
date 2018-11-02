@@ -13,6 +13,12 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
+%{
+#include <ctime>
+#include <limits>
+%}
+
+//Wrap pair of get/set methods attribute
 %include <attribute.i>
 //Read and write attribute ContainerInfo::name
 %attribute(griddb::ContainerInfo, GSChar*, name, get_name, set_name);
@@ -21,13 +27,75 @@
 //Read and write attribute ContainerInfo::rowKeyAssign
 %attribute(griddb::ContainerInfo, bool, row_key, get_row_key_assigned, set_row_key_assigned);
 
+//Define Timestamp constant
+#define PERL_DATETIME_SEC		0
+#define PERL_DATETIME_MIN		1
+#define PERL_DATETIME_HOUR		2
+#define PERL_DATETIME_MDAY		3
+#define PERL_DATETIME_MON		4
+#define PERL_DATETIME_YEAR		5
+#define PERL_DATETIME_WDAY		6
+#define PERL_DATETIME_YDAY		7
+#define PERL_DATETIME_ISDST		8
+#define UTC_TIMESTAMP_MAX 		253402300799.999
+
+/**
+ * Support convert timestamp from Griddb to target language
+ */
+%fragment("convertTimestampToSV", "header") {
+	static SV* convertTimestampToSV(GSTimestamp* timestamp, bool timestamp_to_float = true) {
+		SV* dateTime;
+		// GridDB use UTC datetime => use the string output from gsFormatTime to convert to UTC datetime
+		if (timestamp_to_float) {
+			dateTime = newSVnv(((double)(*timestamp)) / 1000);
+			return dateTime;
+		}
+
+		// Read Time from GridDB
+		size_t bufSize = 100;
+		static GSChar strBuf[100] = {0};
+		gsFormatTime(*timestamp, strBuf, bufSize);
+
+		// Date format is YYYY-MM-DDTHH:mm:ss.sssZ
+		int year;
+		int month;
+		int day;
+		int hour;
+		int minute;
+		int second;
+		int miliSecond;
+		int microSecond;
+		sscanf(strBuf, "%d-%d-%dT%d:%d:%d.%dZ", &year, &month, &day, &hour, &minute, &second, &miliSecond);
+		microSecond = miliSecond * 1000;
+		if (year >= 1900) {
+			year = year - 1900;
+		}
+
+		// Convert to array
+		AV *dateTimeArr = newAV();
+		av_store(dateTimeArr, PERL_DATETIME_SEC, newSViv(second));
+		av_store(dateTimeArr, PERL_DATETIME_MIN, newSViv(minute));
+		av_store(dateTimeArr, PERL_DATETIME_HOUR, newSViv(hour));
+		av_store(dateTimeArr, PERL_DATETIME_MDAY, newSViv(day));
+		av_store(dateTimeArr, PERL_DATETIME_MON, newSViv(month));
+		av_store(dateTimeArr, PERL_DATETIME_YEAR, newSViv(year));
+		av_store(dateTimeArr, PERL_DATETIME_WDAY, newSViv(0));
+		av_store(dateTimeArr, PERL_DATETIME_YDAY, newSViv(0));
+		av_store(dateTimeArr, PERL_DATETIME_ISDST, newSViv(0));
+		dateTime = newRV_noinc((SV*)dateTimeArr);
+
+		return (SV*)dateTime;
+	}
+}
+
 /*
 * fragment to support converting data for GSRow
 */
-%fragment("convertFieldToSV", "header") {
+%fragment("convertFieldToSV", "header", fragment = "convertTimestampToSV") {
 	static void convertFieldToSV(SV* arr, griddb::Field &field, bool timestamp_to_float = true) {
 		int listSize, i;
 		void* arrayPtr;
+		SV* dateTime;
 		switch (field.type) {
         	case GS_TYPE_BLOB:
         		sv_setpvn((SV*)arr, (const char*)field.value.asBlob.data, field.value.asBlob.size);
@@ -51,7 +119,8 @@
         		sv_setpv((SV*)arr, (const char*)field.value.asString);
         		return;
         	case GS_TYPE_TIMESTAMP:
-        		printf("return GS_TYPE_TIMESTAMP");
+        		dateTime = convertTimestampToSV(&field.value.asTimestamp, timestamp_to_float);
+        		sv_setsv(arr, dateTime);
         		return;
         	case GS_TYPE_NULL:
         		return;
@@ -218,6 +287,79 @@
         	default:
         		printf("return GS_TYPE_DEFAULT");
         		return;
+		}
+	}
+}
+
+
+/**
+ * Support convert type from SV to GSTimestamp: input in target language can be :
+ * datetime, string or float
+ */
+%fragment("convertSVToGSTimestamp", "header") {
+	static bool convertSVToGSTimestamp(SV* value, GSTimestamp* timestamp) {
+		int year, month, day, hour, minute, second, milliSecond, microSecond;
+		char* dateString;
+		GSBool retConvertTimestamp;
+	    char s[30];
+		float floatTimestamp;
+
+		if (SvROK(value) && SvTYPE(SvRV(value)) == SVt_PVAV) {	//Check SV is Array
+			// Input is Perl datetime array
+			AV* dateArr = (AV*) SvRV(value);
+
+			year = SvIV(*av_fetch(dateArr, PERL_DATETIME_YEAR, 0));
+			if(year < 1900){	//Year in perl has format 1900 + xx
+				year += 1900;
+			}
+			month = SvIV(*av_fetch(dateArr, PERL_DATETIME_MON, 0)) + 1;	//Month array start with 0 as January
+			day = SvIV(*av_fetch(dateArr, PERL_DATETIME_MDAY, 0));
+			hour = SvIV(*av_fetch(dateArr, PERL_DATETIME_HOUR, 0));
+			minute = SvIV(*av_fetch(dateArr, PERL_DATETIME_MIN, 0));
+			second = SvIV(*av_fetch(dateArr, PERL_DATETIME_SEC, 0));
+			milliSecond = 0;
+			//milliSecond = PyDateTime_DATE_GET_MICROSECOND(value)/1000;
+
+			sprintf(s, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", year, month, day, hour, minute, second, milliSecond);
+			retConvertTimestamp = gsParseTime(s, timestamp);
+			if (retConvertTimestamp == GS_FALSE) {
+				return false;
+			}
+			return true;
+		} else if (SvPOK(value)) {				//Check SV is String
+			// Input is datetime string: ex
+			dateString = (char *)SvPV(value, PL_na);
+    	
+			// Error when string len is too short
+			if (strlen(dateString) < 19) {
+				delete [] dateString;
+				return false;
+			}
+
+			// Convert input string datetime (YYYY-MM-DDTHH:mm:ss:sssZ)
+			// to griddb's string datetime (YYYY-MM-DDTHH:mm:ss.sssZ)
+			dateString[19] = '.';
+			retConvertTimestamp = gsParseTime(dateString, timestamp);
+	        delete [] dateString;
+
+			return (retConvertTimestamp == GS_TRUE);
+		} else if (SvIOK(value)) {				//Check SV is Integer
+			// Parse SV to Integer
+			if (SvIV(value) > UTC_TIMESTAMP_MAX) {
+				return false;
+			}
+			*timestamp = (GSTimestamp)(SvIV(value) * 1000);
+			return true;
+		} else if (SvNOK(value)) {				//Check SV is Double
+			// Parse SV to Double
+			if (SvNV(value) > UTC_TIMESTAMP_MAX) {
+				return false;
+			}
+			*timestamp = (GSTimestamp)(SvNV(value) * 1000);
+			return true;
+		} else {
+			// Invalid input
+			return false;
 		}
 	}
 }
