@@ -117,205 +117,78 @@
 * fragment to support converting data for GSRow
 */
 %fragment("convertFieldToSV", "header", fragment = "convertTimestampToSV") {
-	static void convertFieldToSV(SV* arr, griddb::Field &field, bool timestamp_to_float = true) {
-		int listSize, i;
-		void* arrayPtr;
+	static void convertFieldToSV(SV* returnResult, griddb::Field &field, bool timestamp_to_float = true) {
 		SV* dateTime;
+
+		//Check type attribute of Field then convert corresponding input value from C type to Perl type(SV)
 		switch (field.type) {
         	case GS_TYPE_BLOB:
-        		sv_setpvn((SV*)arr, (const char*)field.value.asBlob.data, field.value.asBlob.size);
+        		//Convert byte array (string) to SV
+        		sv_setpvn((SV*)returnResult, (const char*)field.value.asBlob.data, field.value.asBlob.size);
         		return;
         	case GS_TYPE_BOOL:
-        		sv_setiv(arr, (IV) field.value.asBool);
+        		//Convert bool (integer) to SV
+        		sv_setiv(returnResult, (IV) field.value.asBool);
         		return;
         	case GS_TYPE_INTEGER:
-        		sv_setiv(arr, (IV) field.value.asInteger);
+        		//Convert integer to SV
+        		sv_setiv(returnResult, (IV) field.value.asInteger);
         		return;
         	case GS_TYPE_LONG:
-        		sv_setiv(arr, (IV) field.value.asInteger);
+        		//Convert long (integer) to SV
+        		sv_setiv(returnResult, (IV) field.value.asLong);
         		return;
         	case GS_TYPE_FLOAT:
-        		sv_setnv(arr, (NV) field.value.asFloat);
+        		//Convert float (double) to SV
+        		sv_setnv(returnResult, (NV) field.value.asFloat);
         		return;
         	case GS_TYPE_DOUBLE:
-        		sv_setnv(arr, (NV) field.value.asDouble);
+        		//Convert double to SV
+        		sv_setnv(returnResult, (NV) field.value.asDouble);
         		return;
         	case GS_TYPE_STRING:
-        		sv_setpv((SV*)arr, (const char*)field.value.asString);
+        		//Convert string to SV
+        		sv_setpv((SV*)returnResult, (const char*)field.value.asString);
         		return;
         	case GS_TYPE_TIMESTAMP:
+        		//Convert Timestamp (string or array) to SV
         		dateTime = convertTimestampToSV(&field.value.asTimestamp, timestamp_to_float);
-        		sv_setsv(arr, dateTime);
+        		sv_setsv(returnResult, dateTime);
         		return;
+%#if GS_COMPATIBILITY_SUPPORT_3_5
         	case GS_TYPE_NULL:
+        		sv_setsv(returnResult, NULL);
         		return;
+%#endif
         	case GS_TYPE_BYTE:
-        		sv_setiv(arr, (IV) field.value.asByte);
+        		sv_setiv(returnResult, (IV) field.value.asByte);
         		return;
         	case GS_TYPE_SHORT:
-        		sv_setiv(arr, (IV) field.value.asShort);
+        		sv_setiv(returnResult, (IV) field.value.asShort);
         		return;
         	case GS_TYPE_INTEGER_ARRAY:
-        		printf("return GS_TYPE_INTEGER_ARRAY");
-        		return;
-        	/*
-%#if GS_COMPATIBILITY_VALUE_1_1_106
-            listSize = field.value.asIntegerArray.size;
-            arrayPtr = (void*) field.value.asIntegerArray.elements;
-%#else
-            listSize = field.value.asArray.length;
-            arrayPtr = (void*) field.value.asArray.elements.asInteger;
-%#endif
-            list = PyList_New(listSize);
-            for (i = 0; i < listSize; i++) {
-                PyList_SetItem(list, i, PyInt_FromLong(*((int32_t *)arrayPtr + i)));
-            }
-            return list;
-*/
+        		return;		//Not support for now
         	case GS_TYPE_STRING_ARRAY:
-        		printf("return GS_TYPE_STRING_ARRAY");
-        		return;
-            /*
-            GSChar** arrString;
-%#if GS_COMPATIBILITY_VALUE_1_1_106
-            listSize = field.value.asStringArray.size;
-            arrString = (GSChar**) field.value.asStringArray.elements;
-%#else
-            listSize = field.value.asArray.length;
-            arrString = (GSChar**) field.value.asArray.elements.asString;
-%#endif
-            list = PyList_New(listSize);
-            for (i = 0; i < listSize; i++) {
-                PyList_SetItem(list, i, convertStrToObj(arrString[i]));
-            }
-            return list;
-*/
+        		return;		//Not support for now
         	case GS_TYPE_BOOL_ARRAY:
-        		printf("return GS_TYPE_BOOL_ARRAY");
-        		return;
-            /*
-%#if GS_COMPATIBILITY_VALUE_1_1_106
-            listSize = field.value.asBoolArray.size;
-            arrayPtr = (void*) field.value.asBoolArray.elements;
-%#else
-            listSize = field.value.asArray.length;
-            arrayPtr = (void*) field.value.asArray.elements.asBool;
-%#endif
-            list = PyList_New(listSize);
-            for (i = 0; i < listSize; i++) {
-                PyList_SetItem(list, i, PyBool_FromLong(*((bool *)arrayPtr + i)));
-            }
-            return list;
-            */
+        		return;		//Not support for now
         	case GS_TYPE_BYTE_ARRAY:
-        		printf("return GS_TYPE_BYTE_ARRAY");
-        		return;
-            /*
-%#if GS_COMPATIBILITY_VALUE_1_1_106
-            listSize = field.value.asByteArray.size;
-            arrayPtr = (void*) field.value.asByteArray.elements;
-%#else
-            listSize = field.value.asArray.length;
-            arrayPtr = (void*) field.value.asArray.elements.asByte;
-%#endif
-            list = PyList_New(listSize);
-            for (i = 0; i < listSize; i++) {
-                PyList_SetItem(list, i, PyInt_FromLong(*((int8_t *)arrayPtr + i)));
-            }
-            return list;
-            */
+        		return;		//Not support for now
         	case GS_TYPE_SHORT_ARRAY:
-        		printf("return GS_TYPE_SHORT_ARRAY");
-        		return;
-        	/*
-%#if GS_COMPATIBILITY_VALUE_1_1_106
-            listSize = field.value.asShortArray.size;
-            arrayPtr = (void*) field.value.asShortArray.elements;
-%#else
-            listSize = field.value.asArray.length;
-            arrayPtr = (void*) field.value.asArray.elements.asShort;
-%#endif
-            list = PyList_New(listSize);
-            for (i = 0; i < listSize; i++) {
-                PyList_SetItem(list, i, PyInt_FromLong(*((int16_t *)arrayPtr + i)));
-            }
-            return list;
-            */
+        		return;		//Not support for now
         	case GS_TYPE_LONG_ARRAY:
-        		printf("return GS_TYPE_LONG_ARRAY");
-        		return;
-        	/*
-%#if GS_COMPATIBILITY_VALUE_1_1_106
-            listSize = field.value.asLongArray.size;
-            arrayPtr = (void*) field.value.asLongArray.elements;
-%#else
-            listSize = field.value.asArray.length;
-            arrayPtr = (void*) field.value.asArray.elements.asLong;
-%#endif
-            list = PyList_New(listSize);
-            for (i = 0; i < listSize; i++) {
-                PyList_SetItem(list, i, PyLong_FromLong(*((int64_t *)arrayPtr + i)));
-            }
-            return list;
-            */
+        		return;		//Not support for now
         	case GS_TYPE_FLOAT_ARRAY:
-        		printf("return GS_TYPE_FLOAT_ARRAY");
-        		return;
-        	/*
-%#if GS_COMPATIBILITY_VALUE_1_1_106
-            listSize = field.value.asFloatArray.size;
-            arrayPtr = (void*) field.value.asFloatArray.elements;
-%#else
-            listSize = field.value.asArray.length;
-            arrayPtr = (void*) field.value.asArray.elements.asFloat;
-%#endif
-            list = PyList_New(listSize);
-            for (i = 0; i < listSize; i++) {
-                PyList_SetItem(list, i, PyFloat_FromDouble(static_cast<double>(*((float *)arrayPtr + i))));
-            }
-            return list;
-            */
+        		return;		//Not support for now
         	case GS_TYPE_DOUBLE_ARRAY:
-        		printf("return GS_TYPE_DOUBLE_ARRAY");
-        		return;
-        	/*
-%#if GS_COMPATIBILITY_VALUE_1_1_106
-            listSize = field.value.asDoubleArray.size;
-            arrayPtr = (void*) field.value.asDoubleArray.elements;
-%#else
-            listSize = field.value.asArray.length;
-            arrayPtr = (void*) field.value.asArray.elements.asDouble;
-%#endif
-            list = PyList_New(listSize);
-            for (i = 0; i < listSize; i++) {
-                PyList_SetItem(list, i, PyFloat_FromDouble(*((double *)arrayPtr + i)));
-            }
-            return list;
-            */
+        		return;		//Not support for now
         	case GS_TYPE_TIMESTAMP_ARRAY:
-        		printf("return GS_TYPE_TIMESTAMP_ARRAY");
-        		return;
-        	/*
-%#if GS_COMPATIBILITY_VALUE_1_1_106
-            listSize = field.value.asTimestampArray.size;
-            arrayPtr = (void*) field.value.asTimestampArray.elements;
-%#else
-            listSize = field.value.asArray.length;
-            arrayPtr = (void*) field.value.asArray.elements.asTimestamp;
-%#endif
-            list = PyList_New(listSize);
-            for (i = 0; i < listSize; i++) {
-                PyList_SetItem(list, i, convertTimestampToObject(((GSTimestamp *)arrayPtr + i)));
-            }
-            return list;
-            */
+        		return;		//Not support for now
         	default:
-        		printf("return GS_TYPE_DEFAULT");
         		return;
 		}
 	}
 }
-
 
 /**
  * Support convert type from SV to GSTimestamp: input in target language can be :
