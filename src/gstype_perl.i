@@ -793,7 +793,8 @@
         GSType type = typeList[i];
         rowAtt = av_fetch(rowObj, i, 0);
         if(!(convertSVToFieldWithType(tmpField[i], *rowAtt, type))) {
-           croak(NULL);
+        	printf("Invalid value for column %d, type should be : %d\n", i, type);
+        	SWIG_fail;
         }
         i++;
     }
