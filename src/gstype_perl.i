@@ -412,130 +412,113 @@
 /**
  * Support covert Field from SV* to C Object with specific type
  */
-%fragment("convertSVToFieldWithType", "header", fragment = "convertSVToBlob") {
+%fragment("convertSVToFieldWithType", "header", fragment = "convertSVToBlob", fragment = "convertSVToGSTimestamp") {
     static bool convertSVToFieldWithType(griddb::Field &field, SV* value, GSType type) {
-        size_t size = 0;
-        int res;
-        char* v = 0;
-        bool vbool;
+        char* tmpString = 0;
+        bool convertResult;
+        int tmpInt;
+        long double tmpLongDouble;
+        double tmpDouble;
+        int length;
         field.type = type;
-
         if (value == NULL) {
             field.type = GS_TYPE_NULL;
             return true;
         }
 
-        GSChar *mydata;
-        void *blobData;
-        int year, month, day, hour, minute, second, milliSecond;
-        char s[30];
-        int checkConvert = 0;
-        GSBool retConvertTimestamp;
-        char* pyobjToStr;
-        char* buffer;
-        SV* sRepresentation;
-        int arraySize, i;
-        void* arrayPtr;
-        int tmpInt;
-        long double tmpLongDouble;
-        double tmpDouble;
-        bool inBorderVal = false;
-        bool inRange = false;
-        int length;
         switch(type) {
             case (GS_TYPE_STRING):
                 if (!SvPOK(value)) {
                     return false;
                 }
-                v = (char *)SvPV(value, PL_na);
+            	tmpString = (char *)SvPV(value, PL_na);
                 length = SvCUR(value);
                 field.value.asString = (GSChar*) malloc(length * sizeof(GSChar) + 1);
-                memcpy((void *)field.value.asString, v, length * sizeof(GSChar) + 1);
+                memcpy((void *)field.value.asString, tmpString, length * sizeof(GSChar) + 1);
                 field.type = GS_TYPE_STRING;
                 break;
 
             case (GS_TYPE_BOOL):
                 field.value.asBool = SvTRUE(value);
                 break;
-/*
-            	case (GS_TYPE_BYTE):
-                if (Z_TYPE_P(value) == IS_BOOL) {
-                    return false;
-                }
-                checkConvert = SWIG_AsVal_int(value, &tmpInt);
-                if (!SWIG_IsOK(checkConvert) ||
-                    tmpInt < std::numeric_limits<int8_t>::min() ||
-                    tmpInt > std::numeric_limits<int8_t>::max()) {
+
+			case (GS_TYPE_BYTE):
+				if(!SvIV(value)){
+					return false;
+				}
+                tmpInt = SvIV(value);
+                if (tmpInt < std::numeric_limits<int8_t>::min() ||
+                		tmpInt > std::numeric_limits<int8_t>::max()) {
                     return false;
                 }
                 field.value.asByte = (int8_t) tmpInt;
                 break;
                
             case (GS_TYPE_SHORT):
-                if (Z_TYPE_P(value) == IS_BOOL) 
-                    return false;
-                }
-                checkConvert = SWIG_AsVal_int(value, &tmpInt);
-                if (!SWIG_IsOK(checkConvert) ||
-                    tmpInt < std::numeric_limits<int16_t>::min() ||
-                    tmpInt > std::numeric_limits<int16_t>::max()) {
+				if(!SvIV(value)){
+					return false;
+				}
+            	tmpInt = SvIV(value);
+                if (tmpInt < std::numeric_limits<int16_t>::min() ||
+                		tmpInt > std::numeric_limits<int16_t>::max()) {
                     return false;
                 }
                 field.value.asShort = (int16_t) tmpInt;
                 break;
 
             case (GS_TYPE_INTEGER):
-                if (Z_TYPE_P(value) == IS_BOOL) {
-                    return false;
-                }
-                checkConvert = SWIG_AsVal_int(value, &field.value.asInteger);
-                if (!SWIG_IsOK(checkConvert)) {
-                    return false;
-                }
+				if (!SvIV(value)) {
+					return false;
+				}
+				field.value.asInteger = (int) SvIV(value);
                 break;
-*/
+
             case (GS_TYPE_LONG):
-            	//Check IS_BOOL
-                //if (SvTRUE(value)) {
-                    //return false;
-                //}
+				if (!SvIV(value)) {
+					return false;
+				}
                 field.value.asLong = (long) SvIV(value);
-            	break;
                 //Because swig function above not check overflow of long type.
-                /*
-                tmpDouble = zend_dval_to_lval(Z_DVAL_P(value));
-                if (Z_TYPE_P(tmpDouble) != IS_DOUBLE || tmpDouble < double(std::numeric_limits<long>::min()) ||
-                    tmpDouble > double(std::numeric_limits<long>::max())) {
+                tmpDouble = SvNV(value);
+                if (tmpDouble < double(std::numeric_limits<long>::min()) ||
+                		tmpDouble > double(std::numeric_limits<long>::max())) {
                     return false;
                 }
                 break;
-                */
-/*
+
             case (GS_TYPE_FLOAT):
-                ZVAL_DOUBLE(tmpDouble, value);
+				if (!SvNV(value)) {
+					return false;
+				}
+            	tmpDouble = SvNV(value);
                 field.value.asFloat = tmpDouble;
-                */
-                
-            /*
+                break;
+
             case (GS_TYPE_DOUBLE):
-                sRepresentation = PyObject_Repr(value);
-                pyobjToStr = convertObjToStr(sRepresentation);
-                tmpLongDouble = strtold(pyobjToStr, NULL);
+                tmpLongDouble = SvNV(value);
                 field.value.asDouble = tmpLongDouble;
                 break;
 
             case (GS_TYPE_TIMESTAMP):
-                return convertObjectToGSTimestamp(value, &field.value.asTimestamp);
+                return convertSVToGSTimestamp(value, &field.value.asTimestamp);
                 break;
-                */
 
             case (GS_TYPE_BLOB):
-                vbool = convertSVToBlob(value, &field.value.asBlob.size, (void**) &field.value.asBlob.data);
-                if (!vbool) {
+				convertResult = convertSVToBlob(value, &field.value.asBlob.size, (void**) &field.value.asBlob.data);
+                if (!convertResult) {
                     return false;
                 }
                 break;
-
+            case (GS_TYPE_STRING_ARRAY):
+            case (GS_TYPE_GEOMETRY):
+            case (GS_TYPE_INTEGER_ARRAY):
+            case GS_TYPE_BOOL_ARRAY:
+            case GS_TYPE_BYTE_ARRAY:
+            case GS_TYPE_SHORT_ARRAY:
+            case GS_TYPE_LONG_ARRAY:
+            case GS_TYPE_FLOAT_ARRAY:
+            case GS_TYPE_DOUBLE_ARRAY:
+            case GS_TYPE_TIMESTAMP_ARRAY:
             default:
                 //Not support for now
                 return false;
