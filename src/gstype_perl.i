@@ -820,11 +820,12 @@
 %typemap(argout, fragment = "convertFieldToSV") (GSRowSetType* type, griddb::Row* row, bool* hasNextRow,
     griddb::QueryAnalysisEntry** queryAnalysis, griddb::AggregationResult** aggResult) 
 {
+	SV* convertResult;
 	argvi = 0;						//Reset base output stack
 	int count = $2->get_count();	//Array length of input
-
     griddb::AggregationResult *aggResult = NULL;
     griddb::QueryAnalysisEntry *queryAnalyResult = NULL;
+
     switch(*$1) {
         case (GS_ROW_SET_CONTAINER_ROWS):
             if (*$3 == false) {
@@ -832,25 +833,28 @@
             } else {
             	//Read each col from input then convert to field & increase output stack argvi
                 for (argvi; argvi < count; argvi++) {
-                	$result = sv_newmortal();	//Create the new SV no value
-                	if($result == NULL){
+                	convertResult = sv_newmortal();	//Create the new SV no value
+                	if(convertResult == NULL){
                 		croak("Memory allocation error");
                 	}
-                	convertFieldToSV($result, $2->get_field_ptr()[argvi], arg1->timestamp_output_with_float);
+                	convertFieldToSV(convertResult, $2->get_field_ptr()[argvi], arg1->timestamp_output_with_float);
+            		$result = convertResult;
                 }
             }
             break;
         case (GS_ROW_SET_AGGREGATION_RESULT):
             if (*$3 == false) {
-                sv_setsv($result, NULL);
+                $result = NULL;
             } else {
-                aggResult = *$5 ? (new griddb::AggregationResult((GSAggregationResult*)$5)) : 0;
-                sv_setsv($result, SWIG_NewPointerObj(SWIG_as_voidptr(aggResult), SWIGTYPE_p_griddb__AggregationResult, SWIG_POINTER_OWN));
+            	//Return Object AggregationResult to client
+            	$result = SWIG_NewPointerObj(SWIG_as_voidptr(*$5), $descriptor(griddb::AggregationResult*), SWIG_POINTER_OWN);
+            	argvi++;
             }
             break;
         default:
-            queryAnalyResult = *$4 ? (new griddb::QueryAnalysisEntry((GSQueryAnalysisEntry*)$4)) : 0;
-            sv_setsv($result, SWIG_NewPointerObj(SWIG_as_voidptr(queryAnalyResult), SWIGTYPE_p_griddb__AggregationResult, SWIG_POINTER_OWN));
+        	//Return Object QueryAnalysisEntry to client
+            $result = SWIG_NewPointerObj(SWIG_as_voidptr(*$4), $descriptor(griddb::QueryAnalysisEntry*), SWIG_POINTER_OWN);
+            argvi++;
             break;
     }
     
