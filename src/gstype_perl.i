@@ -479,24 +479,33 @@
     int i = 0;
     int res = 0;
 
+    $1 = NULL;
+    $2 = 0;
+    $3 = NULL;
+    $4 = NULL;
+    $5 = NULL;
+    $6 = NULL;
+    $7 = NULL;
+    $8 = NULL;
+    
     if (len > 0) {
         while ((tmpHE = hv_iternext(tmpHV)) != NULL) {
             char* key = (char*) SvPV(HeSVKEY_force(tmpHE), PL_na);
-            if (strcmp(key, "notificationAddress") == 0){ 
+            if (strcmp(key, "host") == 0){ 
                 $1 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
-            } else if (strcmp(key, "notificationPort") == 0){
+            } else if (strcmp(key, "port") == 0){
                 $2 = (int) SvIV(HeVAL(tmpHE2));
-            } else if (strcmp(key, "clusterName") == 0) {
+            } else if (strcmp(key, "cluster_name") == 0) {
                 $3 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
             } else if (strcmp(key, "database") == 0){
                 $4 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
-            } else if (strcmp(key, "user") == 0){
+            } else if (strcmp(key, "username") == 0){
                 $5 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
             } else if (strcmp(key, "password") == 0){
                 $6 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
-            } else if (strcmp(key, "notificationMember") == 0){
+            } else if (strcmp(key, "notification_member") == 0){
                 $7 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
-            } else if (strcmp(key, "notificationProvider") == 0){
+            } else if (strcmp(key, "notification_provider") == 0){
                 $8 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
             } else if (strcmp(key, GET_STORE_FLAG) == 0) {
             }
