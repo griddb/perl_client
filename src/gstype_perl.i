@@ -298,8 +298,14 @@
 
 			return true;
 		} else if (SvPOK(value)) {					//Check SV is string
-			blobData = (char *)SvPV(value, PL_na);	//Convert SV to string
-			*size = SvCUR(value);					//Get current length
+            char* str = (char *)SvPV(value, PL_na);
+			*size = SvCUR(value) + 1;               //Get current length and null character
+            blobData = (GSChar*) malloc((*size));
+            if (blobData == NULL) {
+                return false;
+            }
+            memset(blobData, 0, (*size));
+            memcpy(blobData, str, (*size - 1));
 			*data = (void*) blobData;
 			return true;
 		}
