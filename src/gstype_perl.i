@@ -979,3 +979,15 @@
 	}
 	sv_setiv($result, $1.type);					//Convert int to SV
 }
+
+/**-------------------------------------AggregationResult Class------------------------------------------------**/
+/*
+* typemap for AggregationResult::get()
+*/
+%typemap(in, numinputs = 0) (griddb::Field *agValue) (griddb::Field tmpAgValue){
+    $1 = &tmpAgValue;
+}
+%typemap(argout, fragment = "convertFieldToSV") (griddb::Field *agValue) {
+    convertFieldToSV($result, *$1, arg1->timestamp_output_with_float);
+    argvi++;
+}
