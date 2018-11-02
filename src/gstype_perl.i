@@ -59,6 +59,10 @@
 #define PERL_DATETIME_YDAY		7
 #define PERL_DATETIME_ISDST		8
 #define UTC_TIMESTAMP_MAX 		253402300799.999
+#define GET_STORE_FLAG	 		"HASH_INPUT"
+
+//Support keyword arguments
+%feature("autodoc", "0");
 
 /**
  * Support convert timestamp from Griddb to target language
@@ -561,6 +565,63 @@
 %}
 
 /**-------------------------------------StoreFactory Class------------------------------------------------**/
+%typecheck(SWIG_TYPECHECK_STRING) (const char* host=NULL) {
+  	if(SvPOK($input)){
+  		int res = SWIG_AsCharPtrAndSize($input, 0, NULL, 0);
+  		$1 = SWIG_CheckState(res);
+  	} else if (SvTYPE(SvRV($input)) == SVt_PVHV) {
+  		HV* tmpHV = (HV*) SvRV($input);
+  		if(!hv_exists(tmpHV, GET_STORE_FLAG, 4)){
+  			hv_store(tmpHV, GET_STORE_FLAG, 4, NULL, 0);
+  			$input = newRV_noinc((SV*)tmpHV);
+  			$1 = SWIG_CheckState(-1);
+  		} else {
+  			$1 = SWIG_CheckState(0);
+  		}
+  	}
+}
+
+/**
+* Typemaps for get_store() function
+*/
+%typemap(in) (const char* host=NULL, int32_t port=NULL, const char* cluster_name=NULL,
+        const char* database=NULL, const char* username=NULL, const char* password=NULL,
+        const char* notification_member=NULL, const char* notification_provider=NULL) 
+(HE* tmpHE, HV* tmpHV) {
+	if (SvTYPE(SvRV($input)) != SVt_PVHV) {
+        croak("Expected a hash");
+    }
+    tmpHV = (HV*) SvRV($input);
+    int len = (int) (hv_iterinit(tmpHV));
+    int i = 0;
+    int res = 0;
+
+    if (len > 0) {
+        while ((tmpHE = hv_iternext(tmpHV)) != NULL) {
+            char* key = (char*) SvPV(HeSVKEY_force(tmpHE), PL_na);
+            if (strcmp(key, "notificationAddress") == 0){ 
+                $1 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
+            } else if (strcmp(key, "notificationPort") == 0){
+                $2 = (int) SvIV(HeVAL(tmpHE2));
+            } else if (strcmp(key, "clusterName") == 0) {
+                $3 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
+            } else if (strcmp(key, "database") == 0){
+                $4 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
+            } else if (strcmp(key, "user") == 0){
+                $5 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
+            } else if (strcmp(key, "password") == 0){
+                $6 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
+            } else if (strcmp(key, "notificationMember") == 0){
+                $7 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
+            } else if (strcmp(key, "notificationProvider") == 0){
+                $8 = (char*) SvPV(HeVAL(tmpHE2), PL_na);
+            } else if (strcmp(key, GET_STORE_FLAG) == 0) {
+            }
+            i++;
+        }
+    }
+}
+
 /**
 * Typemaps for StoreFactory::set_properties(const GSPropertyEntry* props, int propsCount)
 */
