@@ -443,8 +443,13 @@
         int length;
         field.type = type;
         if (value == NULL) {
+%#if GS_COMPATIBILITY_SUPPORT_3_5
             field.type = GS_TYPE_NULL;
             return true;
+%#else
+			//Not support NULL
+			return false;
+%#endif
         }
 
         switch(type) {
@@ -456,7 +461,6 @@
                 length = SvCUR(value);
                 field.value.asString = (GSChar*) malloc(length * sizeof(GSChar) + 1);
                 memcpy((void *)field.value.asString, tmpString, length * sizeof(GSChar) + 1);
-                field.type = GS_TYPE_STRING;
                 break;
 
             case (GS_TYPE_BOOL):
@@ -664,7 +668,7 @@
     }
 }
 
-
+/**-------------------------------------Container Class------------------------------------------------**/
 /**
 * Typemaps for Container::put(Row *rowContainer) function
 */
@@ -716,7 +720,11 @@
 %typemap(in, fragment = "convertSVToFieldWithType") (griddb::Field* keyFields)(griddb::Field field) {
     $1 = &field;
     if ($input == NULL) {
+%#if GS_COMPATIBILITY_SUPPORT_3_5
         $1->type = GS_TYPE_NULL;
+%#else
+        croak("Not support for NULL");
+%#endif
     } else {
         GSType* typeList = arg1->getGSTypeList();
         GSType type = typeList[0];
